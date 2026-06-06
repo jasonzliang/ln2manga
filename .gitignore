@@ -1,11 +1,26 @@
+# Generated / runtime data — scraped source, caches, rendered manga, ledger (NEVER commit:
+# may contain copyrighted source text, character art, and generated pages).
 data/
+
+# Secrets & env
+.env
+.env.*
+
+# Python / tooling
 __pycache__/
 *.pyc
 *.egg-info/
 .pytest_cache/
-.env
 .venv/
+.mypy_cache/
+.ruff_cache/
 
-# local working configs (not shipped)
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+*.log
+
+# Local working configs (NOT shipped — may point at copyrighted reference images / URLs)
 config/references.yaml
 config/run.yaml

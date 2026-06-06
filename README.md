@@ -205,3 +205,9 @@ This project is for **personal, local, non-commercial** experimentation only:
 
 You are responsible for using this tool in compliance with the copyright of any source material
 and reference images you point it at.
+
+## 9. License
+
+The **source code** is released under the **MIT License** (see [`LICENSE`](LICENSE)). That license
+covers this tool's code only — it grants **no** rights to any light-novel text, reference images,
+or other third-party content you process with it, which remain their owners' property (see §8).
