@@ -1,0 +1,37 @@
+[project]
+name = "ln2manga"
+version = "0.1.0"
+description = "Convert light-novel prose into black & white manga pages using only the OpenAI API."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "openai>=2.37.0",
+  "pillow>=10",
+  "numpy>=1.26",
+  "pydantic>=2",
+  "typer>=0.12",
+  "tenacity>=8",
+  "requests>=2.31",
+  "beautifulsoup4>=4.12",
+  "pyyaml>=6",
+  "rich>=13",
+]
+
+[project.optional-dependencies]
+# pytest-xdist enables parallel test runs: `pytest -n auto` (or `-n 4`). The full suite is ~7s
+# serial, so parallel is optional — handy if the suite grows. Worker startup re-imports the deps,
+# so on a fast suite a small worker count (-n 4) usually beats -n auto on many-core machines.
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "pytest-xdist>=3"]
+
+[project.scripts]
+ln2manga = "ln2manga.cli:app"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["ln2manga*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

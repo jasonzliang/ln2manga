@@ -1,0 +1,60 @@
+# ── Retargeting ln2manga to a DIFFERENT creative work ───────────────────────────────────────
+#
+# ln2manga ships with a built-in Re:Zero "bible" (the character ROSTER + the global art STYLE).
+# To draw a DIFFERENT work instead, add a top-level `bible:` section to your master config
+# (config/default.yaml or whatever you pass to --config). Nothing else in the pipeline changes:
+# the same parse → script → charsheet → panels stages will now reason about YOUR characters and
+# render in YOUR style.
+#
+# If you OMIT the `bible:` section entirely, the built-in Re:Zero default is used unchanged.
+#
+# `bible:` understands three keys (all optional):
+#   roster        an inline list of characters (use this OR roster_file, not both)
+#   roster_file   path to a YAML file holding the same list (relative to the project root)
+#   global_style  the art-direction string appended to every image prompt (overrides the default)
+#
+# Each roster entry is:
+#   name          the character's canonical name (what the parser should emit and what shows up
+#                 on the page). REQUIRED.
+#   aliases       other names the source text might use; longer aliases match first, so
+#                 "Subaru Natsuki" wins over "Subaru". Optional.
+#   descriptor    a FROZEN visual description (hair, eyes, build, outfit, distinctive features).
+#                 This exact string is injected verbatim into every prompt the character appears
+#                 in, which is what keeps their face/proportions stable across panels — write it
+#                 carefully and do NOT paraphrase it later. REQUIRED.
+#   ref_image     (optional) a local path or http(s) URL to a REAL reference image for this
+#                 character. Only used when references.enabled is true (see references.example.yaml);
+#                 config-level reference sources take priority over it.
+#
+# Characters NOT listed here are still handled: the parser records a per-chapter "cast" with a
+# visual descriptor for every character it sees, and anyone missing from this roster falls back
+# to that cast descriptor. The roster is for the recurring leads whose look you want pinned down.
+
+bible:
+  # The art style appended to every image prompt. Keep it consistent with how you want the whole
+  # work to look. (Omit this key to keep ln2manga's default black-and-white manga style.)
+  global_style: >-
+    Full-color children's storybook illustration, soft watercolor washes, gentle rounded shapes,
+    warm lighting, single illustration. Absolutely NO text, NO speech bubbles, NO captions,
+    NO sound-effect lettering, NO signature, NO watermark, NO borders.
+
+  # Inline roster (2–3 leads shown). Alternatively, move this list into its own file and point
+  # at it with `roster_file: config/my_work_roster.yaml` instead of `roster:`.
+  roster:
+    - name: Aria
+      aliases: ["the Songbird", "Aria Vell"]
+      descriptor: >-
+        Aria Vell, a cheerful 14-year-old girl with shoulder-length teal hair in twin braids,
+        big amber eyes and a small star-shaped pendant; wears a patched green travelling cloak
+        over a simple cream tunic.
+
+    - name: Brand
+      aliases: ["Sir Brand"]
+      descriptor: >-
+        Brand, a broad-shouldered knight in his thirties with cropped grey hair, a square jaw and
+        a scar over the left brow; wears dark steel plate armor and a faded blue surcoat.
+
+    - name: Pip
+      descriptor: >-
+        Pip, a tiny round wind-spirit the size of a melon: a fluffy pale-blue puffball with two
+        dot eyes and four stubby cloud-like wisps for limbs, always hovering.

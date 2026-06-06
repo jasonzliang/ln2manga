@@ -1,0 +1,58 @@
+# ── Example reference-image map for ln2manga (OPT-IN feature) ───────────────────────────────
+#
+# Anchor a character on a REAL reference image instead of an AI-generated sheet.
+#
+#   * http(s) URLs are DOWNLOADED ("sourced online"), validated, and cached as PNG under
+#     data/cache/refs/<name>.png.
+#   * Local file paths are used directly (validated + cached the same way). Paths may be
+#     absolute, or relative to the project root.
+#
+# YOU must supply legal image URLs/files. Do NOT point this at copyrighted images you do not
+# have the right to use — no real copyrighted URLs are shipped here on purpose. Use your own
+# artwork, properly licensed images, or images you have permission to use.
+#
+# ── How to enable ───────────────────────────────────────────────────────────────────────────
+# 1. Copy this file to config/references.yaml  (the default `references.external_file`), OR
+#    put the same entries inline under `references.sources:` in config/default.yaml.
+# 2. In config/default.yaml set:
+#        references:
+#          enabled: true          # turn the feature ON (default is false = unchanged behavior)
+#          mode: stylize          # "raw"     = use the image as-is ($0, no API call)
+#                                 # "stylize" = one images.edit pass that redraws it as a clean
+#                                 #             B&W manga reference sheet in our style
+# 3. (optional) Pre-download everything:  ln2manga fetch-refs --chapter 6
+#    Then charsheet / run-all automatically use these refs while references.enabled is true.
+#
+# Keys are character names (case-insensitive; aliases from the bible also match). This file may
+# be a flat map (as below) or nested under a top-level `sources:` key. A value may be a single
+# string OR a LIST of several images — when several are given (or several are found online), the
+# B&W reference sheet is SYNTHESIZED from all of them (passed together into one images.edit).
+
+# Online URL — downloaded and cached (replace with a legal image you control):
+Subaru: "https://example.com/your-legal-images/subaru-ref.png"
+
+# MULTIPLE images for one character -> synthesized into one consistent sheet:
+Emilia:
+  - "https://example.com/your-legal-images/emilia-front.png"
+  - "https://example.com/your-legal-images/emilia-side.png"
+
+# Local file — used directly (relative to the project root, or use an absolute path):
+Beatrice: "config/refs/beatrice.png"
+
+# ── Automatic online search (no manual URLs) ────────────────────────────────────────────────
+# Instead of (or in addition to) the entries above, ln2manga can SEARCH the web for a character's
+# official design and synthesize the sheet from what it finds. Enable in config/default.yaml:
+#     references:
+#       enabled: true
+#       mode: stylize
+#       search:
+#         enabled: true
+#         series: "Re:Zero"     # disambiguates the search
+#         max_keep: 3           # how many verified official images to synthesize from
+#         verify: true          # vision-check each hit is the RIGHT character (rejects wrong/promo art)
+# The search uses the OpenAI web-search tool, scrapes the cited official/wiki pages for real image
+# URLs, validates + vision-verifies each, and keeps up to `max_keep`. NOTE: this is best-effort —
+# some sources (e.g. Fandom) block automated access and many results are promo/multi-character art
+# that verification rejects, so search may find few or no usable images and then transparently
+# falls back to the AI-generated sheet. For reliable, high-quality anchoring, provide your own
+# images above.

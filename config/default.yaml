@@ -1,0 +1,124 @@
+# All model IDs, prices, sizes, and budgets live here — nothing hardcoded in stages.
+models:
+  text: gpt-5.4-mini          # bulk prose -> structured panels (Structured Outputs)
+  image: gpt-image-2          # reference sheets + panels (verified: rejects input_fidelity)
+
+image:
+  size: "1024x1536"           # portrait, tallest official ratio -> good manga panels
+  sheet_quality: high         # reference sheets: spend here, generated once
+  panel_quality: medium       # bulk panels: medium ~= half the cost of high
+  output_format: png
+  moderation: low             # Re:Zero has combat; reduce false refusals
+  timeout_s: 240              # per image-call timeout (also used for reference downloads)
+
+# OPT-IN: anchor characters on REAL reference images (local files OR online URLs) instead of
+# AI-generated sheets. With enabled:false (the default) charsheet behaves exactly as before.
+# See config/references.example.yaml and the README for details.
+references:
+  enabled: false              # opt-in master switch
+  mode: stylize               # "raw" = use the image as-is; "stylize" = one images.edit pass
+                              #   that redraws it as a clean B&W manga reference sheet in our style
+  external_file: "config/references.yaml"   # optional extra map (name -> url/path), loaded if present
+  sources: {}                 # inline map: character name -> local path OR http(s) URL
+  # ONLINE SEARCH: when no explicit source is configured for a character, search the web (via the
+  # OpenAI web-search tool) for the OFFICIAL character design and use the best validated image as
+  # the reference. With mode:stylize the official art is redrawn into a B&W manga sheet.
+  search:
+    enabled: false            # opt-in: auto-find official designs online
+    series: "Re:Zero"         # disambiguates the search (the work the characters are from)
+    model: gpt-5.4-mini       # any model supporting the web-search tool
+    tool: web_search          # or "web_search_preview"
+    max_urls: 8               # candidate image URLs to try
+    max_keep: 3               # verified official images to KEEP and synthesize the sheet from
+    min_bytes: 3000           # reject 404 placeholders / tiny icons
+    cost_per_call: 0.03       # budget estimate charged per search
+    verify: true              # vision-check each candidate is the RIGHT character's official art
+                              #   (search can return the wrong character) — reject mismatches
+    verify_model: gpt-5.4-mini
+    agentic: true             # MOST RELIABLE: a subagent-style loop inside the pipeline — the model
+                              #   drives web_search + a verify_image tool (download + vision-check)
+                              #   and keeps iterating until it has `max_keep` verified images. Set
+                              #   false for a cheaper single-shot search + page-scrape.
+    agentic_rounds: 6         # max tool-loop rounds per character
+
+# WORK-AGNOSTIC: the character roster + art style default to Re:Zero (built into bible.py), but
+# any creative work can be targeted from config alone — uncomment and point these at your own
+# cast/style (see config/bible.example.yaml for the format). Omitted -> the built-in default.
+# bible:
+#   roster_file: config/bible.example.yaml   # YAML list of {name, aliases, descriptor, ref_image}
+#   global_style: "Black-and-white manga art, ..."   # overrides the default art-style suffix
+
+# FLAT, CONSERVATIVE per-image USD estimates for the pre-call budget guard.
+# Image models actually bill per token; these intentionally over-estimate so the
+# hard cap trips early, never late. Re-verify before any large run.
+prices_usd:
+  image:
+    gpt-image-2:      {low: 0.04, medium: 0.12, high: 0.22}   # conservative (over-estimate)
+    gpt-image-1.5:    {low: 0.02, medium: 0.07, high: 0.20}
+    gpt-image-1:      {low: 0.02, medium: 0.07, high: 0.19}
+    gpt-image-1-mini: {low: 0.01, medium: 0.03, high: 0.05}
+    default:          {low: 0.02, medium: 0.08, high: 0.20}
+  text_per_mtok:
+    gpt-5.4-mini: {input: 0.75, output: 4.50}
+    gpt-5.4:      {input: 2.50, output: 15.00}
+    default:      {input: 1.00, output: 8.00}
+
+budget:
+  max_usd: 10.0
+  max_image_calls: 250        # hard backstop on paid image generations; must clear a full cold
+                              # chapter (~41 panels + 8 sheets + 8 bubble tiles + sheet retries)
+
+concurrency:
+  image: 10                   # parallel image-generation workers (charsheet + panels run concurrently)
+
+scrape:
+  base_url: "https://witchculttranslation.com"
+  arc_path: "/arc-6/"
+  delay_s: 3.0
+  user_agent: "ln2manga/0.1 (personal, non-commercial use)"
+  content_selector: ".entry-content"
+  max_paragraphs: 0           # 0 = whole chapter; >0 truncates (handy for cheap tests)
+
+parse:
+  chunk_chars: 6000
+  reasoning_effort: low
+  max_output_tokens: 16000
+
+layout:
+  page_width: 1488
+  page_height: 2126
+  margin: 44
+  gutter: 26
+  panels_per_page_min: 3
+  panels_per_page_max: 6
+
+mangapost:                   # DEFAULT = clean manga-style GREYSCALE (no print-style screentone/grain)
+  tones: 0                   # 0 = no posterization (keep continuous greyscale); >0 posterizes
+  halftone: false            # screentone dots = print look; OFF for clean on-screen greyscale
+  halftone_cell: 4           # (only if halftone:true) dot block size
+  denoise: false             # (only for the screentone/ink path) 3x3 median pre-filter
+  ink_lines: false           # edge-ink outlines OFF — the manga art already has its own line work
+  ink_threshold: 105         # (only if ink_lines:true) higher = fewer/cleaner inked contours
+
+lettering:
+  bubble_style: organic      # "organic" = cached API bubble SHAPES + crisp Pillow text (needs
+                             #   bubbles.model); "drawn" = Pillow vector bubbles ($0, deterministic)
+  max_font: 38
+  min_font: 15
+  line_width_frac: 0.62      # bubble text-wrap width as a fraction of panel width
+  max_bubbles_per_panel: 4   # bubbles a single panel may carry; extra spoken lines are dropped
+  dense_abridge_frac: 0.90   # GENTLE crowd-trim: only panels with >=4 spoken bubbles shrink each
+                             #   line to this fraction of its char budget (never below a readable
+                             #   floor) so crowded bubbles stay readable without gutting the text
+  dialogue_font: "ComicNeue-Bold.ttf"
+  shout_font: "Bangers-Regular.ttf"
+  fallback_font: "DejaVuSans-Bold.ttf"
+
+bubbles:                     # organic bubble shapes — ONLY used when lettering.bubble_style: organic
+  model: gpt-image-1-mini    # MUST be gpt-image-1 family (gpt-image-2 rejects background=transparent)
+  count_per_style: 2         # distinct shapes per style; cached + reused -> ~one-time ($0.05-0.10) cost
+  size: "1024x1024"
+  quality: low
+
+paths:
+  data: "data"

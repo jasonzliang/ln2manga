@@ -1,0 +1,11 @@
+data/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.env
+.venv/
+
+# local working configs (not shipped)
+config/references.yaml
+config/run.yaml
