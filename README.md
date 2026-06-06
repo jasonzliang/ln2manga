@@ -175,6 +175,19 @@ references). Point any command at an alternate file with `--config path/to.yaml`
   `drawn` (deterministic Pillow vector bubbles, $0).
 - `references.*` — see §4.
 
+> **Local config files (why `run.yaml` / `references.yaml` aren't in the repo).** `ln2manga` reads
+> `config/default.yaml` unless you pass `--config`. Your *personal* settings live in two
+> **git-ignored** files — they're local-only because they may point at copyrighted reference images
+> and reflect machine-specific choices, so the repo ships the **templates**, not your copies:
+>
+> | Git-ignored (yours) | Tracked template (shipped) | What it is |
+> |---|---|---|
+> | `config/run.yaml` | `config/default.yaml` | Your copy of the defaults with your overrides (e.g. `references.enabled: true`). Create with `cp config/default.yaml config/run.yaml`, edit, then `--config config/run.yaml`. *(Or just edit `default.yaml` directly — `run.yaml` is only a convention to keep your changes separate.)* |
+> | `config/references.yaml` | `config/references.example.yaml` | Your character→image map (§4). |
+>
+> Both are intentionally not committed; the three shipped templates (`default.yaml`,
+> `references.example.yaml`, `bible.example.yaml`) are everything a clone needs to start.
+
 ## 7a. Adapting to a different work (it's not Re:Zero-locked)
 
 The pipeline is **work-agnostic** — the Re:Zero defaults are just defaults. To target a different
